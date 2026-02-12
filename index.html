@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터의 세계: 압축, 암호화 및 시각화 종합 진단</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f2f5; }
+        .quiz-card { display: none; }
+        .quiz-card.active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .option-btn.correct { background-color: #10b981 !important; color: white; border-color: #059669; }
+        .option-btn.wrong { background-color: #ef4444 !important; color: white; border-color: #dc2626; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- 시작 화면 -->
+    <div id="setup-screen" class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center border border-gray-100">
+        <div class="inline-block p-4 bg-indigo-50 rounded-full mb-6">
+            <span class="text-4xl">📊</span>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">데이터의 세계 종합 진단</h1>
+        <p class="text-gray-600 mb-8 leading-relaxed">
+            압축, 암호화, 전처리, 그리고 시각화까지!<br>
+            교과서 핵심 내용을 10문제로 정리해 봅시다.
+        </p>
+        <button onclick="startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg transform hover:-translate-y-1">
+            퀴즈 시작하기
+        </button>
+    </div>
+
+    <!-- 퀴즈 진행 화면 -->
+    <div id="quiz-container" class="max-w-2xl w-full hidden">
+        <div class="mb-6 flex justify-between items-center text-sm font-bold text-indigo-600 bg-white p-4 rounded-xl shadow-sm">
+            <span id="progress-text">문제 1 / 10</span>
+            <div class="w-2/3 bg-gray-200 rounded-full h-3 ml-4">
+                <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-500" style="width: 10%"></div>
+            </div>
+        </div>
+        <div id="question-area"></div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-screen" class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center hidden border border-gray-100">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">테스트 결과</h2>
+        <div class="text-7xl font-black text-indigo-600 my-8" id="final-score">0 / 10</div>
+        <div id="result-message" class="text-lg font-medium text-gray-700 mb-8 px-4 py-3 bg-gray-50 rounded-xl"></div>
+        <button onclick="restartQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform active:scale-95">
+            새로운 문제로 다시 도전
+        </button>
+    </div>
+
+    <script>
+        const originalQuestions = [
+            {
+                "question": "데이터를 압축할 때, 'AAAAABBBCC'를 'A5B3C2'와 같이 표현하는 방식의 명칭은 무엇인가요?",
+                "options": ["런 길이 부호화 (Run-Length Encoding)", "허프만 부호화 (Huffman Coding)", "대칭 키 암호화", "해싱 (Hashing)"],
+                "correctIndex": 0,
+                "rationale": "동일한 데이터가 연속될 때 그 값과 개수를 묶어서 기록하여 용량을 줄이는 대표적인 무손실 압축 기법입니다.",
+                "hint": "데이터가 '연속(Run)'되는 '길이(Length)'를 센다는 의미를 생각해보세요."
+            },
+            {
+                "question": "다음 중 압축을 해제했을 때 원본과 1비트의 오차도 없어야 하는 파일 형식에 부적절한 압축 방식은?",
+                "options": ["손실 압축", "무손실 압축", "런 길이 부호화", "아카이브 저장"],
+                "correctIndex": 0,
+                "rationale": "손실 압축은 용량을 줄이기 위해 일부 데이터를 삭제하므로, 실행 파일이나 문서처럼 정확성이 중요한 데이터에는 쓸 수 없습니다.",
+                "hint": "데이터의 일부가 '손실'되어도 괜찮은 데이터가 무엇인지 떠올려보세요."
+            },
+            {
+                "question": "공개 키 암호 방식(비대칭 키)에서 데이터를 암호화할 때 사용하는 키와 복호화할 때 사용하는 키에 대한 설명으로 옳은 것은?",
+                "options": ["누구에게나 공개된 '공개 키'로 암호화하고, 본인만 가진 '비밀 키'로 복호화한다.", "하나의 키로 암호화와 복호화를 동시에 수행한다.", "비밀 키로 암호화하고 공개 키로 복호화하는 것이 기본 원칙이다.", "두 키의 모양과 암호화 알고리즘이 완전히 동일하다."],
+                "correctIndex": 0,
+                "rationale": "공개 키는 전송용으로 널리 배포하고, 실제 해독은 보안이 유지된 개인의 비밀 키로만 가능하게 설계되어 있습니다.",
+                "hint": "누구나 상자에 자물쇠를 채울 수는 있지만, 열쇠는 주인만 갖고 있는 상황을 상상해보세요."
+            },
+            {
+                "question": "데이터 전처리 과정에서 수집된 데이터의 오류를 수정하거나 중복을 제거하는 작업의 주된 목적은 무엇인가요?",
+                "options": ["데이터 분석의 정확도와 신뢰성을 높이기 위해", "데이터의 보안 등급을 높이기 위해", "데이터를 더 복잡하게 만들기 위해", "컴퓨터의 하드웨어 성능을 개선하기 위해"],
+                "correctIndex": 0,
+                "rationale": "잘못된 데이터(Garbage In)가 들어가면 잘못된 결과(Garbage Out)가 나오므로 전처리는 매우 중요한 단계입니다.",
+                "hint": "요리하기 전에 재료를 깨끗이 씻고 손질하는 이유가 무엇일까요?"
+            },
+            {
+                "question": "시간에 따른 감염병 확진자 수의 변화 추이를 분석하여 미래의 확산세를 예측하려고 할 때 가장 적절한 시각화 방법은?",
+                "options": ["꺾은선그래프 (Line Chart)", "워드 클라우드 (Word Cloud)", "산점도 (Scatter Plot)", "방사형 차트 (Radar Chart)"],
+                "correctIndex": 0,
+                "rationale": "시간 흐름에 따른 연속적인 데이터의 증감을 파악하고 추세를 확인하는 데 가장 효과적인 시각화 도구입니다.",
+                "hint": "연도별, 월별 기온 변화를 어떻게 표시하는지 생각해보세요."
+            },
+            {
+                "question": "데이터를 시각화할 때, 지나치게 화려한 디자인이나 왜곡된 그래프 축을 사용하는 것이 위험한 이유는 무엇인가요?",
+                "options": ["데이터의 본질을 왜곡하여 잘못된 의사결정을 내리게 할 수 있어서", "파일 용량이 너무 커져서 전송이 불가능해지기 때문에", "컴퓨터 모니터의 해상도를 낮출 수 있기 때문에", "수집된 데이터가 자동으로 삭제될 위험이 있어서"],
+                "correctIndex": 0,
+                "rationale": "시각화는 정보를 명확하게 전달하는 것이 핵심이므로, 화려함보다 정직함과 가독성이 우선되어야 합니다.",
+                "hint": "그래프의 0점 조절을 잘못하면 작은 차이가 엄청나게 커 보일 수 있다는 점을 생각해보세요."
+            },
+            {
+                "question": "현대 암호 체계가 매우 안전하다고 평가받는 결정적인 이유는 무엇인가요?",
+                "options": ["수학적 난제를 해독하는 데 엄청난 시간이 걸리는 방식을 사용하기 때문에", "아무도 암호 알고리즘의 이름을 모르기 때문에", "인터넷 연결이 없어야만 작동하기 때문에", "영문 알파벳만 사용할 수 있기 때문에"],
+                "correctIndex": 0,
+                "rationale": "소인수분해와 같은 복잡한 수학 원리를 사용하여 현실적인 시간 내에 해킹이 불가능하도록 설계되었습니다.",
+                "hint": "해커가 모든 경우의 수를 대입해보는 데 얼마나 걸릴지 상상해보세요."
+            },
+            {
+                "question": "공공 데이터 포털에서 수집한 데이터가 '비식별화' 처리되어 있다는 것은 무엇을 의미하나요?",
+                "options": ["특정 개인을 식별할 수 있는 정보를 삭제하거나 대체했다.", "데이터의 품질이 너무 낮아 식별이 불가능하다.", "암호화되어 있어 아무도 읽을 수 없는 상태이다.", "컴퓨터 바이러스가 제거된 깨끗한 데이터이다."],
+                "correctIndex": 0,
+                "rationale": "개인 정보를 가려 사생활 침해를 방지하면서도 데이터 통계는 활용할 수 있게 만든 상태입니다.",
+                "hint": "이 데이터를 보고 '이게 누구인지' 알아낼 수 없게 만들었다는 뜻입니다."
+            },
+            {
+                "question": "디지털 이미지의 압축률이 10:1이라는 것은 무엇을 의미하나요?",
+                "options": ["압축 후 데이터 크기가 압축 전의 1/10로 줄어들었다.", "데이터의 화질이 10배 더 좋아졌다.", "암호화 수준이 10단계 더 강화되었다.", "파일을 여는 속도가 10배 더 빨라졌다."],
+                "correctIndex": 0,
+                "rationale": "압축 전후의 비율을 나타내며, 숫자가 클수록 더 효율적으로 용량이 줄어들었음을 의미합니다.",
+                "hint": "100MB였던 파일이 압축 후에 몇 MB가 되었을지 생각해보세요."
+            },
+            {
+                "question": "데이터를 기반으로 문제를 해결하는 전체 과정에서 '가설 설정'과 '결론 도출' 사이에 반드시 수행되어야 하는 핵심 과정은?",
+                "options": ["데이터 수집 및 분석", "회원 가입 및 로그인", "모니터 해상도 조절", "데이터 삭제 및 포맷"],
+                "correctIndex": 0,
+                "rationale": "가설이 맞는지 확인하기 위해서는 관련 데이터를 모으고 이를 분석하여 증거를 찾아야 합니다.",
+                "hint": "생각만으로 끝내지 않고 '증거'를 찾아내는 단계를 떠올려보세요."
+            }
+        ];
+
+        let shuffledQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            
+            // 문제 순서 섞기
+            shuffledQuestions = shuffle([...originalQuestions]);
+            
+            // 각 문제의 보기 순서도 개별적으로 섞기
+            shuffledQuestions = shuffledQuestions.map(q => {
+                const optionsWithMeta = q.options.map((opt, i) => ({
+                    text: opt,
+                    isCorrect: i === q.correctIndex
+                }));
+                const shuffledOpts = shuffle(optionsWithMeta);
+                return {
+                    ...q,
+                    options: shuffledOpts.map(o => o.text),
+                    correctIndex: shuffledOpts.findIndex(o => o.isCorrect)
+                };
+            });
+
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function restartQuiz() {
+            // 결과 화면을 숨기고 퀴즈 다시 시작 (문제 재배열 포함)
+            startQuiz();
+        }
+
+        function showQuestion() {
+            const q = shuffledQuestions[currentQuestion];
+            const progress = ((currentQuestion + 1) / shuffledQuestions.length) * 100;
+            
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerText = `문제 ${currentQuestion + 1} / ${shuffledQuestions.length}`;
+            
+            let html = `
+                <div class="bg-white rounded-2xl shadow-xl p-8 transform transition-all">
+                    <h3 class="text-xl font-bold text-gray-800 mb-8 leading-relaxed">${q.question}</h3>
+                    <div class="grid grid-cols-1 gap-4 mb-8">
+                        ${q.options.map((opt, i) => `
+                            <button onclick="checkAnswer(${i})" id="opt-${i}" 
+                                class="option-btn w-full text-left p-5 rounded-2xl border-2 border-gray-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 font-medium text-gray-700 shadow-sm">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="feedback" class="hidden p-5 rounded-2xl mb-6 text-sm leading-relaxed border shadow-inner"></div>
+                    <div class="flex justify-between items-center">
+                        <button onclick="showHint()" class="flex items-center text-indigo-600 font-bold hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors">
+                            <span class="mr-2">💡</span> 힌트 보기
+                        </button>
+                        <button id="next-btn" onclick="nextQuestion()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-xl font-bold shadow-lg transform active:scale-95 transition-all">
+                            다음 문제
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('question-area').innerHTML = html;
+            canAnswer = true;
+        }
+
+        function checkAnswer(idx) {
+            if (!canAnswer) return;
+            canAnswer = false;
+            
+            const q = shuffledQuestions[currentQuestion];
+            const isCorrect = idx === q.correctIndex;
+            const feedback = document.getElementById('feedback');
+            const nextBtn = document.getElementById('next-btn');
+            const clickedBtn = document.getElementById(`opt-${idx}`);
+            const correctBtn = document.getElementById(`opt-${q.correctIndex}`);
+
+            if (isCorrect) {
+                score++;
+                clickedBtn.classList.add('correct');
+                feedback.className = "p-5 rounded-2xl mb-6 text-sm leading-relaxed bg-green-50 text-green-800 border-green-200 border shadow-inner";
+                feedback.innerHTML = `<p class="font-bold text-base mb-1">🎉 정답입니다!</p><p>${q.rationale}</p>`;
+            } else {
+                clickedBtn.classList.add('wrong');
+                correctBtn.classList.add('correct');
+                feedback.className = "p-5 rounded-2xl mb-6 text-sm leading-relaxed bg-red-50 text-red-800 border-red-200 border shadow-inner";
+                feedback.innerHTML = `<p class="font-bold text-base mb-1">❌ 오답입니다!</p><p>${q.rationale}</p>`;
+            }
+            
+            feedback.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        function showHint() {
+            const q = shuffledQuestions[currentQuestion];
+            const feedback = document.getElementById('feedback');
+            feedback.innerHTML = `<p class="font-bold text-indigo-700 mb-1 underline decoration-2 underline-offset-4">🔍 힌트</p><p class="text-indigo-900">${q.hint}</p>`;
+            feedback.className = "p-5 rounded-2xl mb-6 text-sm leading-relaxed bg-indigo-50 border-indigo-200 border shadow-inner";
+            feedback.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < shuffledQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} / ${shuffledQuestions.length}`;
+            
+            let msg = "";
+            if (score === 10) msg = "와우! 당신은 데이터 마스터입니다! 🏆";
+            else if (score >= 8) msg = "대단해요! 핵심 내용을 거의 완벽하게 이해하고 있네요. ✨";
+            else if (score >= 5) msg = "좋아요! 틀린 문제를 다시 확인하면 실력이 더 늘 거예요. 😊";
+            else msg = "조금 더 복습이 필요해 보여요. 교과서를 다시 한번 훑어볼까요? 💪";
+            
+            document.getElementById('result-message').innerText = msg;
+        }
+    </script>
+</body>
+</html>
